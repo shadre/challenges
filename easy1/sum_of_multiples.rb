@@ -7,20 +7,16 @@ class SumOfMultiples
   end
 
   def self.to(limit)
-    SumOfMultiples.new.to(limit)
+    new.to(limit)
   end
 
   def to(limit)
-    multiples(limit).reduce(:+) || 0
+    multiples(limit).reduce(0, :+)
   end
 
   private
 
   def multiples(limit)
-    multiples_arr = []
-    set.each do |num|
-      multiples_arr += (1...limit).select { |n| (n % num).zero? }
-    end
-    multiples_arr.uniq
+    (1...limit).select { |n| set.any? { |num| (n % num).zero? } }
   end
 end
