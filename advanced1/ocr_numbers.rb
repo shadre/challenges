@@ -6,26 +6,43 @@ class OCR
   end
 
   def convert
-    numbers.map(&:convert).join
+    if numbers.all? { |el| el.kind_of? Array }
+      numbers.map { |array| convert_to_string(array) }
+             .join(',')
+    else
+      convert_to_string(numbers)
+    end
   end
 
   private
 
+  def convert_to_string(array_of_ocr_numbers)
+    array_of_ocr_numbers.map(&:convert).join
+  end
+
   def multiple_nums?(text)
-    text.lines.any? { |line| line.length > 4 }
+    text.lines.any? { |line| line.chomp.length > 3 }
   end
 
   def numberize(text)
     if multiple_nums?(text)
-      text.lines
-          .map { |line| line.chomp.scan(/...?/) }
-          .transpose
-          .map { |num| num.join("\n") }
-          .map { |text| OCR_Number.new(text) }
+      if text =~ /\n\n/
+        text.split("\n\n")
+            .map { |line_text| turn_into_numbers(line_text) }
+      else
+        turn_into_numbers(text)
+      end
     else
       [OCR_Number.new(text)]
     end
+  end
 
+  def turn_into_numbers(line_text)
+    line_text.lines
+             .map { |line| line.chomp.scan(/...?/) }
+             .transpose
+             .map { |num| num.join("\n") }
+             .map { |text| OCR_Number.new(text) }
   end
 end
 
@@ -69,10 +86,5 @@ class OCR_Number
     end
 
     true
-  end
-
-
-  def correct_size?
-    text.count("\n") == 3
   end
 end
